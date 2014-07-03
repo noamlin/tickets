@@ -6,9 +6,6 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var dust = require('dustjs-linkedin');
 
-var website = require('./routes/website');
-var adminPanel = require('./routes/admin_panel');
-
 var app = express();
 
 // view engine setup
@@ -22,8 +19,15 @@ app.use(bodyParser.urlencoded());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', website);
-app.use('/admin', adminPanel);
+// routing to router files
+var website_router = require('./routes/website');
+app.use('/', website_router);
+var adminPanel_router = require('./routes/admin_panel');
+app.use('/admin', adminPanel_router);
+var paypal_router = require('./routes/paypal');
+app.use('/paypal', paypal_router);
+var stripe_router = require('./routes/stripe');
+app.use('/stripe', stripe_router);
 
 /// catch 404 and forward to error handler
 app.use(function(req, res, next) {

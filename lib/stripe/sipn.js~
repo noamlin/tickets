@@ -1,0 +1,46 @@
+var stripe = require("stripe")("sk_test_lY6YRQ7tBK2tefCc2Lt9vFNJ");
+var mongodb = require('mongodb');
+var ObjectID = require('mongodb').ObjectID;
+var mailer = require('../mailer');
+
+//permanent veriables
+var SENDER = "The Ticket <system@the-ticket.com>";
+var ADMIN = "omerozery@gmail.com";
+
+/****************************************************
+Handling SIPN's (Stripe Instant Payment Notification)
+****************************************************/
+exports.Handle = function(req, res) {
+
+  var event = req.body;
+  if(event.type == "charge.succeeded" || event.type == "charge.failed" || event.type == "charge.failed" || event.type == "charge.refunded" || event.type == "charge.captured" || event.type == "charge.updated") {
+		try {
+			var purchaseID = new ObjectID(req.body.data.object.metadata.invoice);
+		} catch (err) {
+			console.log(err)
+		}
+		var MongoClient = mongodb.MongoClient;
+		MongoClient.connect("mongodb://localhost:27017/tickets", function(err, db) {
+			if(err) {
+				console.log(err);
+			} else { 
+				console.log('A connection to the database has been made using mongoClient');
+				db.collection('purchases').findOne({ '_id': purchaseID }, function(err, purchase) {
+					if(err) {
+						console.log(err);
+					} else {
+						if(!purchase) {
+	    				//logging and sending mail to the admin about it
+	    				console.log('purchase ' + purchaseID + ' cant be found');
+	    				mailer.SendMail(SENDER, ADMIN, "Notification from Stripe::WebHook::handle", "CHARGE: " +
+            	JSON.stringify(req.body, null, 2) + " has arrived witch invoice: " + purchaseID + " and does not much any purchase id in database");
+	    			} else {
+							console.log(purchase);
+						}
+					}
+				});
+			}
+		});
+	}
+}
+

@@ -1,0 +1,19 @@
+var mdb = require('../mdb');
+//permanent veriables
+var EVENTS = "events";
+
+exports.increase = function (req, res, args) {
+
+  args.collection = EVENTS;
+  args.query = {'_id': args.eventID };
+  args.update = { $inc : {} };
+  args.update.$inc['coupons.' + args.couponP + '.times_used'] = args.quantity;
+  mdb.update(req, res, args);
+}
+
+exports.decrease = function (req, res, args) {
+
+	args.quantity = -quantity;
+	this.increase(req, res, args);
+}
+

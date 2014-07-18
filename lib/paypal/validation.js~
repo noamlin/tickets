@@ -1,0 +1,55 @@
+var mongodb = require('mongodb');
+var ObjectID = require('mongodb').ObjectID;
+var mailer = require('../mailer');
+var validate = require('validate')
+
+exports.formCheckAndDBinsert = function(/*req, res*/) {
+
+  var eventID = "5314ab269f8411720c44db5e";
+  var ticketP = [0,1]; //try and catch on this! for it can be "Das"
+  var couponP = 0;
+  var email ;
+  var quantity = 'bla';
+  var fields = ["omer","ozery"];
+
+  //creating id for purchase to insert DB and send later as invoice to paypal
+  purchaseID = new ObjectID();
+  var MongoClient = mongodb.MongoClient;
+  MongoClient.connect("mongodb://localhost:27017/tickets", function(err, db) {
+    if(err) {
+      console.log(err);
+    } else { 
+      console.log('A connection to the database has been made using mongoClient');
+      db.collection('events').findOne({ '_id': new ObjectID(eventID) }, function(err, event) {
+        if(err) {
+	  console.log(err);
+	} else {
+	  if(!event) {
+	    //logging and sending mail to the admin about it
+	    console.log('event ' + eventID + ' cant be found');
+	    /*mailer.SendMail("The Ticket App <system@the-ticket.com>", "omerozery@gmail.com", 'unknown event ' + eventID + ' has arrived from Purchase FORM' +
+            ' and does not much any event id in database');*/
+	  } else {
+	    
+	    var ticket = event.sub_events[ticketP[0]].tickets[ticketP[1]];
+	    var coupon = event[couponP];
+	    //if (check.isEmail(email))
+
+	    if(email.match(/^(([^<>()[\]\\.,;:\s@\)"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/i))
+	    {console.log(email);}
+	
+
+	    /*db.collection('purchases').insert(purchase, function(err, records) {
+              if(err) {
+	        console.log(err);
+	      } else {
+	        console.log("Record added as "+records[0]._id);
+	      }
+	    });  */   
+          }
+	}
+      });
+    }
+  });
+}
+

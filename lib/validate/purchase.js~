@@ -1,0 +1,58 @@
+/****************************************************
+Validate Purchase Request Before Inserting to Databse
+*****************************************************/
+exports.purchase = function(purchaseReq, event, reply) {
+
+	//defines general veriables
+	var payBy = purchaseReq.payBy;
+	var ticketP = purchaseReq.ticketP;
+	var couponP = purchaseReq.couponP;
+	var cellphone = purchaseReq.cellphone;
+	var email = purchaseReq.email;
+	var quantity = purchaseReq.quantity;
+	var fieldsValues = purchaseReq.fieldsValues;
+	var fieldsAttributes = event.fields;
+	var maxTicketsPerPurchase = event.max_tickets_per_purchase;
+	try {
+		var ticket = event.sub_events[ticketP[0]].tickets[ticketP[1]];
+		var coupon = event.coupons[couponP];
+	} catch(err) {
+		console.log(err);
+	}
+
+	//validate payment type
+	reply = this.paymentMethod(payBy, reply);
+	if(!reply.payBy) {
+
+		//checking for valid ticket pointer
+		reply = this.ticketP(event, ticketP, reply);
+		if(!reply.ticket) {
+
+			//validate quantity
+			reply = this.quantity(quantity, maxTicketsPerPurchase, reply);
+			if(!reply.quantity) {
+
+				//validate coupon if exists (quantity needs to be checked byvalidateQuantity only and before using this function!
+				if(coupon) {
+					reply = this.coupon(coupon, quantity, ticketP, reply);
+				}
+
+				//validate cellphone if needed
+				if(event.send_sms) {
+					reply = this.cellphone(cellphone, reply);
+				}
+
+				//validate ticket (quantity needs to be checked by validateQuantity only and before using this function!
+				reply = this.ticket(ticket, quantity, reply);
+
+				//validate random fields
+				reply = this.fields(fieldsValues, fieldsAttributes, reply);
+
+				//validate email address
+				reply = this.email(email, reply);
+			}
+		}
+	}
+	return reply;
+}
+

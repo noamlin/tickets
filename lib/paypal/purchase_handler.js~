@@ -1,0 +1,139 @@
+var mongodb = require('mongodb');
+var ObjectID = require('mongodb').ObjectID;
+var mailer = require('../mailer');
+var validator = require('./validator');
+
+//local function for final price calculation
+function finalPriceCalc (quantity, ticket, coupon) {
+  if(coupon) {
+    if(coupon.type == 'fixed') {
+      return quantity*ticket.price-coupon.rate
+    }
+    if(coupon.type == 'percentage') {
+      return quantity*ticket.price*(1-coupon.rate/100)
+    }
+  }
+  return quantity*ticket.price
+}
+
+/*
+problems reminder:
+1. selectbox only string values entered to the purchase document (because you can never know what type of values the admin ment to put in the select box options
+2. improve cellphone validation! (does it suppose to be with +? and does it supposed to be saved as int or string) and does the digits or phone fields supposed to be saved as integer or string in database
+3. Vulnerable from ticketP arrived from client ! , needs to work on that. as well on the eventID
+4. digits type fields bigger then 22 digits (+-) are not passed validation
+5. empty digits/phone/date type fields are given the int 0 while putted in database
+*/
+exports.handle = function(/*req, res*/) {
+
+  var eventID = "5315ef799f8411770c44db5f"; // ✔/x
+  var ticketP = [1,1]; // ✔/x
+  var couponP = 0; //✔
+  var cellphone ;
+  var email = "omerozery@walla.co.il"; //✔
+  var quantity = "4"; //✔
+  var fieldsValues = ["omerozery@walla.com","","341","blablaasdasdas334","avikam"]; //✔/x
+
+  //creating id for purchase to insert DB and send later as invoice to paypal
+  //purchaseID = new ObjectID();
+  var MongoClient = mongodb.MongoClient;
+  MongoClient.connect("mongodb://localhost:27017/tickets", function(err, db) {
+    if(err) {
+      console.log(err);
+    } else { 
+      console.log('A connection to the database has been made using mongoClient');
+      db.collection('events').findOne({ '_id': new ObjectID(eventID) }, function(err, event) {
+        if(err) {
+	  console.log(err);
+	} else {
+	  if(!event) {
+	    //logging and sending mail to the admin about it
+	    console.log('event ' + eventID + ' cant be found');
+	    /*mailer.SendMail("The Ticket App <system@the-ticket.com>", "omerozery@gmail.com", 'unknown event ' + eventID + ' has arrived from Purchase FORM' +
+            ' and does not much any event id in database');*/
+	  } else {
+	    try {
+
+	      var ticket = event.sub_events[ticketP[0]].tickets[ticketP[1]];
+	      var coupon = event.coupons[couponP];
+	      var fieldsAttributes = event.fields;
+	      var jsonAnswer = { "status": "success" }
+
+	      //validate email address
+	      jsonAnswer = validator.validateEmail(email, jsonAnswer);
+	      //validate cellphone if needed
+	      if(event.send_sms) {
+		jsonAnswer = validator.validateCellphone(cellphone, jsonAnswer);
+	      }
+	      //validate quantity
+	      jsonAnswer = validator.validateQuantity(quantity, event.max_tickets_per_purchase, jsonAnswer);
+	      if(!jsonAnswer.quantity) {
+	        //validate coupon if exists (without checking the quantity, quantity needs to be checked by validateQuantity only!
+	        if(coupon) {
+	          jsonAnswer = validator.validateCoupon(coupon, quantity, ticketP, jsonAnswer);
+	        }
+	        //validate ticket (without checking the quantity, quantity needs to be checked by validateQuantity only!
+ 	        jsonAnswer = validator.validateTicket(ticket, quantity, jsonAnswer);
+	      }
+	      //validate random fields
+	      jsonAnswer = validator.validateFields(fieldsValues, fieldsAttributes, jsonAnswer);
+
+	    } catch(error) {
+	      console.log(error);
+	    }
+	    //if validations failed return json answer with errors to the client browser
+	    if(Object.keys(jsonAnswer).length > 1) {
+	      jsonAnswer.status = "failed";
+              console.log(jsonAnswer);
+	    //else creates json purchase and inserts to database
+	    } else {
+	      var purchase = {
+		"_id": new ObjectID(),
+		"event_id": new ObjectID(eventID),
+		"ticket_pointer": ticketP,
+		"ticket_name": ticket.name,
+		"quantity": parseInt(quantity),
+		"final_price": finalPriceCalc(quantity, ticket, coupon),
+		"email": email,
+		"status": "not-paid",
+		"fields": []
+	      }
+	      //checks for cellphone
+	      if(event.send_sms) {
+	        purchase.cellphone = cellphone
+	      }
+	      //checks for coupon
+	      if(coupon) {
+	        purchase.coupon = {
+		  "pointer": parseInt(couponP),
+		  "type": coupon.type,
+		  "rate": coupon.rate
+		}
+	      }
+	      //inserting fields
+	      for (var field = 0 ; field < fieldsAttributes.length ; field++) {
+		purchase.fields[field] = {
+		  "name": fieldsAttributes[field].name,
+		}
+		if (fieldsAttributes[field].type == 'phone' || fieldsAttributes[field].type == 'digits' || fieldsAttributes[field].type == 'date') {
+		  purchase.fields[field].value = parseInt(fieldsValues[field]);
+		} else {
+		  purchase.fields[field].value = fieldsValues[field].toString();
+		}
+	      }
+	      //inserting json purchase to database
+	      db.collection('purchases').insert(purchase, function(err, records) {
+                if(err) {
+	          console.log(err);
+	        } else {
+	          console.log("Record added as "+records[0]._id);
+	        }
+	      }); 
+	    }   
+          }
+	}
+      });
+    }
+  });
+}
+

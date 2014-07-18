@@ -1,0 +1,94 @@
+"use strict";
+var paypal = require('paypal-rest-sdk');
+
+/*
+ * Configure Paypal SDK
+ */
+exports.configurePaypal = function(){
+  paypal.configure({
+      'host': 'api.sandbox.paypal.com',
+      'port': '',
+      'client_id': 'AbyGsxBUuERfvvukrRzMnL4zu0DyGiKcI8Tk0QxyYwuZITUm8jVu0GnDLj11',
+      'client_secret': 'EBWr4hAF2dmZZ1bq5kvql41VWEQc88_rGp2pwriWTid701I7BXPLZOggIgud'
+  });
+}
+
+/*
+ * Create Paypal Payment Json
+ */
+
+exports.create_payment = function(req, res){
+
+  var method = req.param('method');
+  var payment = {
+    "intent": "sale",
+    "payer": {},
+    "transactions": [{
+      "amount": {
+        "currency": req.param('currency'),
+	"total": req.param('amount')
+      },
+      "description": req.param('description')
+    }]
+  };
+
+  if (method === 'paypal') {
+    payment.payer.payment_method = 'paypal';
+    payment.redirect_urls = {
+     "return_url": "http://localhost:3000/execute",
+     "cancel_url": "http://localhost:3000/cancel"
+    };
+  } else if (method === 'credit_card') {
+    payment.payer.payment_method = 'credit_card';
+    payment.payer.funding_instruments = [{
+      "credit_card": {
+        "type": req.param('type').toLowerCase(),
+        "number": req.param('number'),
+        "expire_month": req.param('expire_month'),
+	"expire_year": req.param('expire_year'),
+	"cvv2": req.param('cvv2'),
+	"first_name": req.param('first_name'),
+	"last_name": req.param('last_name')
+     }
+    }];
+  }
+	//res.send(payment);
+  paypal.payment.create(payment, function (error, payment) {
+    if (error) {
+      console.log(error);
+      res.render('error', { 'error': error });
+    } else {
+      req.session.paymentId = payment.id;
+      res.render('create', { 'payment': payment });
+    }
+  });
+};
+
+
+/*
+ * Execute a paypal transaction
+ */
+
+exports.execute = function(req, res){
+  //var paymentId = req.session.paymentId;
+  //var payerId = req.param('PayerID');
+ 
+  //var details = { "payer_id": payerId };
+  //paypal.payment.execute(paymentId, details, function (error, payment) {
+  paypal.payment.execute(payment, function (error, payment) {
+    if (error) {
+      console.log(error);
+      res.render('error', { 'error': error });
+    } else {
+      res.render('execute', { 'payment': payment });
+    }
+  });
+};
+
+/*
+ * Cancel a paypal transaction
+ */
+
+exports.cancel = function(req, res){
+  res.render("cancel");
+};

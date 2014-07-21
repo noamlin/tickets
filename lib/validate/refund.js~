@@ -1,0 +1,14 @@
+/**********************
+Validate Refund Request
+***********************/
+exports.refund = function(refundReq, purchase, reply) {
+
+	//validate quantity
+	reply = this.quantity(refundReq.quantity, purchase.quantity.total, reply);
+
+	//validate purchase status for refund
+	if(!this.isCompleted(purchase.status) && !this.IsRefunded(purchase.status)) {
+		reply.purchaseStatus = "Invalid purchase status for refund";
+	}
+	return reply;
+}

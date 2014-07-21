@@ -1,0 +1,73 @@
+var ipn = require('paypal-ipn');
+var mongodb = require('mongodb');
+var ObjectID = require('mongodb').ObjectID;
+var mailer = require('../mailer');
+
+//var mongoose = require('mongoose');
+//mongoose.connect('mongodb://localhost/the_tickets');
+
+exports.handle = function(req, res) {
+
+  //Send HTTP 200 to paypal as required
+  res.send(200);
+  //Verify IPN against paypal servers
+  ipn.verify(req.body, function callback(err, msg) {
+    if(err) {
+      console.error(msg);
+    } else {
+      //If VERIFIED Strat Dealing the IPN Accordinly
+      var MongoClient = mongodb.MongoClient;
+      MongoClient.connect("mongodb://localhost:27017/tickets", function(err, db) {
+        if(err) {
+	console.log(err);
+        } else { 
+          console.log('A connection to the database has been made using mongoClient');
+	  db.collection('purchases').findOne({ '_id': new ObjectID(req.param('invoice')) }, function(err, purchase) {
+            if(err) {
+	      console.log(err);
+	    } else {
+	      if(!purchase) {
+	        console.log('purchase ' + req.param('invoice') + ' cant be found'); // very bad!! ipn contain invoice that is not an purchase object id already -- send mail!
+		mailer.SendMail("The Ticket App <system@the-ticket.com>", "omerozery@gmail.com", "Notification from IPNhandler", "IPN: " +
+                JSON.stringify(req.body, null, 2) + " has arrived and does not much any purchase id in database");
+	      } else {
+	        if(purchase.paypal) {
+		  //If Paypal Subdocument Exists Updating only the payment_status
+		  var paypal_record_status = 'updated';
+		  purchase.paypal.payment_status = req.param('payment_status');
+		  purchase.paypal.mc_gross1 = req.param('mc_gross1');
+		  
+		} else {
+		  //If Paypal Subdocument Doesn't Exists Building the paypal subdocument for the purchase
+		  var paypal_record_status = 'created';
+		  purchase.paypal = {
+		    "first_name": req.param('first_name'),
+		    "last_name": req.param('last_name'),
+		    "payer_email": req.param('payer_email'),
+		    "mc_currency": req.param('mc_currency'),
+		    "txn_id": req.param('txn_id'),
+		    "payment_date": req.param('payment_date'),
+		    "payment_status": req.param('payment_status'),
+		    "mc_gross1": req.param('mc_gross1'),
+		    "quantity1": req.param('quantity1'),
+		    "item_name1": req.param('item_name1')
+	          };
+		}
+		
+		db.collection('purchases').update({ '_id': new ObjectID(req.param('invoice')) } , purchase , function(err, records) {
+		  if(err) {
+		    console.log(err);
+	      	  } else {
+	       	    console.log("Paypal record has been " + paypal_record_status + " for purchase " + req.param('invoice'));
+	          }
+	        });
+		mailer.SendMailToUser(purchase); //sending mail to the user with his purchase details (status included) *notice if mail doesnt work so is the update to db
+	      }
+	    }
+	  });
+	}
+      }); 
+    }
+  });
+}
+

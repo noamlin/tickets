@@ -1,0 +1,202 @@
+
+/*********************
+Validate email address
+**********************/
+exports.validateEmail = function(email, reply) {
+  if (email == undefined) {
+    reply.email = "Undefined email";
+    return reply;
+  }
+  if(!email.toString().match(/^(([^<>()[\]\\.,;:\s@\)"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/i)) {
+    reply.email = "Email is incorrect";
+  }
+  return reply;
+}
+
+/****************
+Validate quantity
+*****************/
+exports.validateQuantity = function(quantity, max_tickets_per_purchase, reply) {
+  if (quantity == undefined) {
+    reply.quantity = "Undefined quantity";
+    return reply;
+  }
+  if(parseInt(quantity) != quantity || quantity <= 0 || quantity > max_tickets_per_purchase) {
+    reply.quantity = "Invalid number of tickets";
+  }
+  return reply;
+}
+
+/*********************
+Validate random fields
+**********************/
+
+//fixed Variable for maximum chars allowed
+var MULTILINE_MAX_CHARS = 500;
+var MAX_CHARS = 50;
+
+//local function for for selectbox's values validation
+function validateSelectbox (selectOptions, option, formField) {
+  if(selectOptions.length == option) {
+    return false;
+  } else {
+    return (selectOptions[option] == formField || validateSelectbox(selectOptions, option+1, formField))
+  }
+}
+
+exports.validateFields = function(formFields, eventFields, reply) {
+
+  errorFields = {};
+  for(var field = 0 ; field < eventFields.length ; field++) {
+
+    if(formFields[field] == undefined) {
+      errorFields[field] = "Undefined field";
+    }
+    else if (!formFields[field].toString() && eventFields[field].mandatory) {
+      errorFields[field] = "This field is required";
+    } 
+    else if (formFields[field].toString()) {
+
+      //checks MAX chars allowed for multiline-text
+      if(eventFields[field].type == 'multiline_text' && formFields[field].toString().length > MULTILINE_MAX_CHARS) {
+	errorFields[field] = "Maximum of " + MULTILINE_MAX_CHARS + " chars";
+	continue;
+      }
+      //checks MAX chars allowed for non-multiline-text
+      if(eventFields[field].type != 'multiline_text' && formFields[field].toString().length > MAX_CHARS) {
+	errorFields[field] = "Maximum of " + MAX_CHARS + " chars";
+	continue;
+      }
+      //checks MAX chars allowed, set by admin
+      if(eventFields[field].max_chars && eventFields[field].max_chars < formFields[field].toString().length) {
+        errorFields[field] = "Maximum of " + eventFields[field].max_chars + " chars is required";
+	continue;
+      }
+      //checks MIN chars allowed, set by admin
+      if(eventFields[field].min_chars && eventFields[field].min_chars > formFields[field].toString().length) {
+        errorFields[field] = "Minimum of " + eventFields[field].min_chars + " chars is required";
+	continue;
+      }
+      //checks selectbox options for selectbox type fields
+      if(eventFields[field].type == 'selectbox' && !validateSelectbox(eventFields[field].select_options, 0, formFields[field])) {
+        errorFields[field] = "Selectbox invalid option";
+	continue;
+      }
+      //checks for email type fields
+      if(eventFields[field].type == 'email' && this.validateEmail(formFields[field], {}).email) {
+	errorFields[field] = "Email is incorrect";
+	continue;
+      }
+      //checks for digits type fields
+      if((eventFields[field].type == 'digits' || eventFields[field].type == 'phone') && parseInt(formFields[field]) != formFields[field]) {
+	errorFields[field] = "Digits only";
+	continue;
+      }
+      //checks for date type fields
+      if(eventFields[field].type == 'date') {
+	if(parseInt(formFields[field]) == formFields[field]) {
+          if(eventFields[field].min_date && eventFields[field].min_date > formFields[field]) {
+            errorFields[field] = "The minimum date is: " + new Date(eventFields[field].min_date);
+          }
+          if(eventFields[field].max_date && eventFields[field].max_date < formFields[field]) {
+            errorFields[field] = "The maximum date is: " + new Date(eventFields[field].max_date);
+          }
+	} else {
+	  errorFields[field] = "Invalid date";
+	}
+      }
+    }
+  }
+
+  //if error fields is not empty pushes it to the reply json and changing the status to failed
+  if(Object.keys(errorFields).length) {
+    reply.fields = errorFields;
+  }
+  return reply;
+}
+
+/**************
+Validate coupon
+***************/
+exports.validateCoupon = function(coupon, quantity, ticketP, reply) {
+
+  //checks disabled / enabled
+  if(coupon.disabled) {
+    reply.coupon = "This coupon is disabled";
+    return reply;
+  }
+  //checks coupon's expiry time
+  var now = Math.floor(new Date().getTime()/1000);
+  if(now >= coupon.timeout) {
+    reply.coupon = "This coupon has expired";
+    return reply;
+  }
+  //checks that the number of this coupon's uses doesn't exceed maximum uses allowed
+  if(coupon.times_used >= coupon.maximum_uses) {
+    reply.coupon = "This coupon ran out of uses";
+    return reply;
+  }
+
+  //check whether it's possible to use this coupon 'quantity' times
+  if(coupon.times_used+parseInt(quantity) > coupon.maximum_uses) {
+    reply.coupon = "It is not possible to use this coupon " + quantity + " times";
+    return reply;
+  }
+  //checks whether the coupon is bounded to the ticket or not
+  var boundToTicket = false;
+  for(var ticket = 0; ticket < coupon.related_tickets.length; ticket++) {
+    if(coupon.related_tickets[ticket][0] == ticketP[0] && coupon.related_tickets[ticket][1] == ticketP[1]) {
+      boundToTicket = true;
+    }
+  }
+  if(!boundToTicket) {
+    reply.coupon = "This coupon is not related to this ticket";
+    return reply;
+  }
+  return reply;
+}
+
+/**************
+Validate ticket
+***************/
+exports.validateTicket = function(ticket, quantity, reply) {
+
+  //checks status
+  if(ticket.status == 'hidden' || ticket.status == 'disabled') {
+    reply.ticket = "This ticket is inactive";
+    return reply;
+  }
+  //checks ticket's purchase range
+  var now = Math.floor(new Date().getTime()/1000);
+  if(now < ticket.sale_start || now >= ticket.sale_end ) {
+    reply.ticket = "This ticket is unavailable at this time";
+    return reply;
+  }
+  //checks that the number of this ticket's purchases doesn't exceed quantity in stock
+  if(ticket.purchased >= ticket.quantity) {
+    reply.ticket = "This ticket sold out";
+    return reply;
+  }
+  //check whether its possible to purchase 'quantity' tickets
+  if(ticket.purchased+parseInt(quantity) > ticket.quantity) {
+    reply.ticket = "It is not possible to buy " + quantity + " tickets of the requested type";
+    return reply;
+  }
+  return reply;
+}
+
+/*********************
+Validate Cell phone
+**********************/
+exports.validateCellphone = function(cellphone, reply) {
+  if (cellphone == undefined) {
+    reply.cellphone = "Undefined cellphone";
+    return reply;
+  }
+  if(!cellphone.toString().match(/^\+[1-9]{12,13}$/)) {
+    reply.cellphone = "Invalid cellphone number";
+  }
+  return reply;
+}
+
+

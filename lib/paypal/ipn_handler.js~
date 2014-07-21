@@ -1,0 +1,201 @@
+var ipn = require('paypal-ipn');
+var mongodb = require('mongodb');
+var ObjectID = require('mongodb').ObjectID;
+var mailer = require('../mailer');
+
+//permanent veriables
+var SENDER = "The Ticket <system@the-ticket.com>";
+var ADMIN = "omerozery@gmail.com";
+
+//local function for handaling paypal's status (sending mails and updating purchase document status accordinly)
+function StatusHandler(purchase) {
+
+	var paymentStatus = purchase.paypal.payment_status;
+	purchase.status = paymentStatus;
+
+	if (paymentStatus == 'Pending') {
+		var pendingReason = purchase.paypal.pending_reason;
+		if(pendingReason == 'authorization') {
+			purchase.status = 'Waiting for capture';
+			//Notify the user by mail that his purchase is in pending state (only for pending reason - 'authorization')
+			var body = "<b>Thank you for buying The-Tickets: your Ticket is waiting for approval, a new mail will be sent with the ticket/s details when transaction is done</b>";
+			mailer.SendMail(SENDER, purchase.email, "The-Ticket ✔", body);
+		} else {     
+			switch (pendingReason) {
+			case 'address':
+				var body = "<b>your customer did not include a confirmed shipping address and your Payment Receiving Preferences is set yo allow you to manually accept or deny each of these payments. To change your preference, go to the Preferences section of your Profile.<b>";
+				break;
+
+			case 'echeck':
+				var body = "<b>The payment was made by an eCheck that has not yet cleared.<b>";
+				break;
+
+			case 'intl':
+				var body = "<b>you hold a non-U.S. account and do not have a withdrawal mechanism. You must manually accept or deny this payment from your Account Overview.<b>";
+				break;
+
+			case 'multi-currency':
+				var body = "<b>You do not have a balance in the currency sent, and you do not have your profiles's Payment Receiving Preferences option set to automatically convert and accept this payment. As a result, you must manually accept or deny this payment.<b>";
+				break;
+
+			case 'order':
+				var body = "<b>You set the payment action to Order and have not yet captured funds.<b>";
+				break;
+
+      case 'paymentreview':
+				var body = "<b>The payment is being reviewed by PayPal for risk.<b>";
+				break;
+
+      case 'regulatory_review':
+				var body = "<b>The payment is pending because PayPal is reviewing it for compliance with government regulations. PayPal will complete this review within 72 hours. When the review is complete, you will receive a second IPN message whose payment_status/reason code variables indicate the result.<b>";
+				break;
+
+			case 'upgrade':
+				var body = "<b>The payment was made to an email address that is not yet registered or confirmed.<b>";
+				break;
+
+			case 'unilateral':
+				var body = "<b>The payment was made via credit card and you must upgrade your account to Business or Premier status before you can receive the funds. upgrade can also mean that you have reached the monthly limit for transactions on your account.<b>";
+				break;
+
+			case 'verify':
+				var body = "<b>you are not yet verified. You must verify your account before you can accept this payment.<b>";
+				break;
+
+			case 'other':
+				var body = "<b>The payment is pending for a reason other than those listed above. For more information, contact PayPal Customer Service.<b>"     
+				break;
+
+			default:
+				console.log("Payal::IPN::StatusHandler Error : Unfamiliar pending reason : " + pendingReason);
+				var body = "Purchase: " + purchase._id + " is pending with unfamiliar pending reason: " + pendingReason;
+			}
+			//Notify the admin by mail about any of the pending reasons (other then 'authorization');
+			mailer.SendMail(SENDER, ADMIN, "Notification from Payal::IPN::StatusHandler", body);
+		}
+	} else {
+		switch(PaymentStatus) {
+		case 'Completed':
+		var body = "<b>Thank you for buying " + purchase.paypal.quantity1 + " Tickets of: " + purchase.paypal.item_name1 +
+			" in total cost of " + purchase.paypal.mc_gross1 + " " + purchase.paypal.mc_currency + "</b>"; 
+			break;
+
+		case 'Voided':
+			var body = "<b>We dont want to sell you any ticket<b>";
+			break;
+
+		case 'Expired':
+			var body = "<b>The event's admin was delaying for too long your purchase's approval so no charge has been made<b>";
+			break;
+
+		case 'Refunded':
+			var body = "<b>Charge was Refunded<b>";
+			break;
+
+		case 'Denied':
+			var body = "<b>The payment was denied. This happens only if the payment was previously pending because of one of the reasons listed for the pending_reason variable or the Fraud_Management_Filters_x variable.<b>";
+			break;
+
+		case 'Failed':
+			var body = "<b>Charge failed : The payment has failed. This happens only if the payment was made from your customer's bank account<b>";
+			break;
+
+		case 'Reversed':
+			var body = "<b>The payment was reversed due to a chargeback or other type of reversal. The funds have been returned to you<b>";
+			break;
+
+		case 'Canceled_Reversal':
+			var body = "<b>Successfully canceled The Payment reversal, the funds for the transaction that was reversed have been returned to the seller.<b>";
+			break;
+
+    case 'Processed':
+			var body = "<b>The payment has been accepted<b>";
+			break;
+
+		case 'Created':
+			var body = "<b>A German ELV payment is made using Express Checkout.<b>";
+			break;
+
+    default:
+      purchase.status = "Unknown";
+      console.log("Payal::IPN::StatusHandler Error : Unfamiliar payment status : " + paymentStatus);
+      var body = "Purchase: " + purchase._id + " is in Unknown payment status: " + paymentStatus;
+      //Notify the admin by mail about an Unknown payment_status arrived from paypal's IPN
+      mailer.SendMail(SENDER, ADMIN, "Notification from Payal::IPN::StatusHandler", body);
+      body = "<b>An Error occurred while processing your purchase request, we are taking care of it as quickly as possible, thank you for buying The-Tickets and sorry for the delay<b>";
+    }
+    //Notify the user by mail about his payment status;
+    mailer.SendMail(SENDER, purchase.email, "The-Ticket ✔", body);
+	}
+	return purchase;
+};
+
+/***************************************************
+Handling IPN's (Paypal Instant Payment Notification)
+****************************************************/
+exports.Handle = function(req, res) {
+
+	//Send HTTP 200 to paypal as required
+	res.send(200);
+	//Verify IPN against paypal servers
+	ipn.verify(req.body, function callback(err, msg) {
+		if(err) {
+			console.error(msg);
+		} else {
+			//If VERIFIED Strat Dealing the IPN Accordinly
+			try {
+				var purchaseID = new ObjectID(req.param('invoice'));
+			} catch (err) {
+				console.log(err)
+			}
+			var MongoClient = mongodb.MongoClient;
+      MongoClient.connect("mongodb://localhost:27017/tickets", function(err, db) {
+				if(err) {
+					console.log(err);
+        } else { 
+          console.log('A connection to the database has been made using mongoClient');
+	  			db.collection('purchases').findOne({ '_id': purchaseID }, function(err, purchase) {
+						if(err) {
+	      			console.log(err);
+	    			} else {
+	      			if(!purchase) {
+								//logging and sending mail to the admin about it
+	        			console.log('purchase ' + purchaseID + ' cant be found');
+								mailer.SendMail(SENDER, ADMIN, "Notification from Payal::IPN::handle", "IPN: " +
+              	JSON.stringify(req.body, null, 2) + " has arrived with invoice: " + purchaseID + " and does not much any purchase id in database");
+	      			} else {
+								//Building the purchase's paypal subdocument
+								purchase.paypal = {
+									"first_name": req.param('first_name'),
+									"last_name": req.param('last_name'),
+									"payer_email": req.param('payer_email'),
+									"mc_currency": req.param('mc_currency'),
+									"txn_id": req.param('txn_id'),
+									"payment_date": req.param('payment_date'),
+									"payment_status": req.param('payment_status'),
+									"mc_gross": req.param('mc_gross'),
+									"quantity1": req.param('quantity1'),
+									"item_name1": req.param('item_name1')
+								}
+								//adds pending reason if exists
+								if(req.param('pending_reason')) {
+									purchase.paypal.pending_reason = req.param('pending_reason');
+								}
+								//Updating purchase status and sending mails accordinly
+								purchase = StatusHandler(purchase);
+								db.collection('purchases').update({ '_id': purchaseID } , purchase , function(err, records) {
+		  						if(err) {
+		    						console.log(err);
+	      	  			} else {
+	       	    			console.log("paypal record for purchase: " + purchaseID + " has been updated");
+	          			}
+	        			});
+	      			}
+	    			}
+	  			});
+				}
+			}); 
+		}
+  });
+}
+

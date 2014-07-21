@@ -1,0 +1,11 @@
+/****************************************
+Validate Authorize Request (capture/void)
+*****************************************/
+exports.authorize = function(purchase, reply) {
+
+	//validate purchase status for authorize (capture/void)
+	if(!this.isWFC(purchase.status)) {	
+		reply.purchaseStatus = "Invalid purchase status for authorize (capture/void)";
+	}
+	return reply;
+}

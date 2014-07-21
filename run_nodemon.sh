@@ -1,1 +1,1 @@
-NODE_ENV=production /opt/nodejs/bin/nodemon /opt/Dropbox/projects/tickets/ --watch /opt/Dropbox/projects/tickets/ --ext .js,.html,.css
+NODE_ENV=development /opt/nodejs/bin/nodemon /opt/Dropbox/projects/tickets/ --watch /opt/Dropbox/projects/tickets/ --ext .js,.html,.css,.dust

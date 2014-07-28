@@ -15,38 +15,108 @@
 	<script type="text/javascript" src="/public/foundation-5.3.1/js/vendor/modernizr.js"></script>
 </head>
 <body>
-	<div class="row">
-		<div class="large-12 columns">
-			<h1>Welcome to Foundation</h1>
-		</div>
-	</div>
+	<div class="off-canvas-wrap" data-offcanvas="">
+		<div class="inner-wrap">
+			<nav data-topbar="" class="top-bar">
+				<ul class="title-area">
+					<li class="name">
+						<h1><a href="/{lang}/">The Tickets Network</a></h1>
+					</li>
+					<li class="toggle-topbar menu-icon"><a href=""><span>Menu</span></a></li>
+				</ul>
 
-	<div class="row">
-		<div class="large-12 columns">
-			<div class="panel">
-				<h3>We&rsquo;re stoked you want to try Foundation! </h3>
-				<p>To get going, this file (index.html) includes some basic styles you can modify, play around with, or totally destroy to get going.</p>
-				<p>Once you've exhausted the fun in this document, you should check out:</p>
+
+				<section class="top-bar-section">
+					<!-- Right Nav Section -->
+					<ul class="right show-for-large-up">
+						<li class="active"><a href="#">Right Button Active</a></li>
+						<li class="has-dropdown not-click">
+							<a href="#">Right Button Dropdown</a>
+							<ul class="dropdown"><li class="title back js-generated"><h5><a href="javascript:void(0)">Back</a></h5></li>
+								<li><a href="#">First link in dropdown</a></li>
+							</ul>
+						</li>
+					</ul>
+
+					<ul class="right hide-for-large-up">
+						<li class="active"><a href="#">Right Button</a></li>
+						<li class="has-dropdown not-click">
+							<a href="#">Right Dropdown</a>
+							<ul class="dropdown"><li class="title back js-generated"><h5><a href="javascript:void(0)">Back</a></h5></li>
+								<li><a href="#">First link in dropdown</a></li>
+							</ul>
+						</li>
+					</ul>
+
+					<!-- Left Nav Section -->
+					<ul class="left show-for-large-up">
+						<li><a href="#">Left Button</a></li>
+					</ul>
+				</section>
+			</nav>
+
+			<aside class="left-off-canvas-menu">
+				<ul class="off-canvas-list">
+					<li><label>Foundation</label></li>
+					<li><a href="#">The Psychohistorians</a></li>
+					<li><a href="#">The Encyclopedists</a></li>
+					<li><a href="#">The Mayors</a></li>
+					<li><a href="#">The Traders</a></li>
+					<li><a href="#">The Merchant Princes</a></li>
+					<li><label>Foundation and Empire</label></li>
+					<li><a href="#">The General</a></li>
+					<li><a href="#">The Mule</a></li>
+					<li><label>Second Foundation</label></li>
+					<li><a href="#">Search by the Mule</a></li>
+					<li><a href="#">Search by the Foundation</a></li>
+				</ul>
+			</aside>
+
+			<section class="main-section">
 				<div class="row">
-					<div class="large-4 medium-4 columns">
-						<p><a href="http://foundation.zurb.com/docs">Foundation Documentation</a><br />Everything you need to know about using the framework.</p>
+					<div class="large-12 columns">
+						<p>
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed vel lobortis metus, nec sollicitudin arcu. Cras semper egestas facilisis. Nunc quis blandit augue, eget rhoncus lacus. Donec lacinia purus id pretium aliquam. In fringilla luctus justo, quis placerat mi laoreet quis. Maecenas at dignissim nisi. Aenean sit amet tortor metus. Nunc mattis ullamcorper consectetur. Nulla ut lacus sed nunc convallis mollis.
+<br><br>
+Sed neque metus, ullamcorper eleifend dolor consequat, elementum lobortis ligula. Morbi facilisis, lacus eu convallis sollicitudin, risus velit ultrices velit, sed convallis nunc leo id felis. Ut tincidunt magna at dui dapibus, quis elementum magna tempor. Pellentesque pulvinar faucibus risus, eu bibendum est pretium eget. Nam venenatis nisi vel tortor interdum congue vitae vitae mauris. Nam odio nulla, scelerisque nec felis a, adipiscing tincidunt risus. In ipsum quam, sollicitudin a laoreet a, semper tempus eros.
+<br><br>
+Proin vitae tortor dignissim, viverra lacus at, laoreet ligula. Aliquam condimentum, lorem quis pretium commodo, turpis velit mollis enim, ut sollicitudin enim lacus ut lorem. Duis a eleifend ligula. Aliquam eget sapien viverra, fermentum lectus sed, varius nisi. Suspendisse sit amet nisi augue. Morbi tristique tincidunt leo, eu egestas nisi pretium a. Proin sit amet malesuada nisl, non vulputate nunc. Mauris in arcu risus. Proin elit tortor, mollis interdum nisi vitae, vulputate euismod nisl. Duis sodales ligula laoreet quam hendrerit posuere. Donec eget turpis nisl. Aliquam ligula nibh, gravida quis mattis non, posuere non purus. Morbi quis sollicitudin mi. Duis a enim quis magna sagittis fermentum ac quis nisl. Vivamus gravida turpis a mauris elementum aliquam. Nulla in sodales lacus.
+<br><br>
+Fusce tincidunt viverra ligula at sagittis. Phasellus convallis aliquam odio, eget lacinia libero commodo vitae. Maecenas vel adipiscing est. Vivamus ultricies dui quis volutpat tristique. Ut tristique nulla nec mi vehicula, ac consectetur ligula porta. In blandit, augue luctus viverra ultricies, mauris nulla bibendum massa, at pulvinar enim elit eget leo. Sed nec tellus ipsum. Pellentesque enim est, tincidunt non odio id, sagittis tempor ipsum. Nulla vulputate turpis vitae justo pellentesque, quis aliquet felis mollis. Aliquam ut justo et lectus dapibus ornare.
+<br><br>
+Curabitur viverra magna sit amet tellus congue bibendum. Ut ornare diam sed nisl fermentum, aliquet aliquet justo tempus. Praesent turpis sapien, tincidunt ac tempus a, venenatis convallis nisl. Vestibulum vulputate, neque nec aliquet lacinia, magna augue iaculis tortor, a faucibus nibh augue nec neque. Mauris eu tempus leo. Morbi adipiscing nulla quis varius tempor. Sed mollis dolor placerat ipsum vulputate, sed hendrerit nulla scelerisque. Suspendisse vulputate sit amet orci sed aliquam. Nunc dictum elit at placerat dignissim. Nunc dapibus ornare massa nec ullamcorper. Ut facilisis felis cursus lacus egestas, eget fringilla elit aliquam. Curabitur commodo metus nibh, at blandit metus feugiat et. Proin non sodales diam.
+<br><br>
+Sed libero tellus, adipiscing at mi elementum, mollis lobortis urna. Duis accumsan purus massa, id volutpat turpis laoreet in. Vivamus nec leo mollis nunc suscipit mattis. Donec tincidunt luctus tortor vel bibendum. Donec suscipit faucibus orci non placerat. Integer ullamcorper lorem euismod, posuere risus non, accumsan velit. Integer laoreet nulla dictum orci eleifend pulvinar. Maecenas in ligula eu velit ultrices euismod quis a velit. Nullam tortor nisl, lacinia vitae sapien eu, volutpat pharetra erat. Integer nec adipiscing erat. Proin libero nisi, convallis a tempus vitae, faucibus vitae massa. Pellentesque ullamcorper dolor eu arcu suscipit, mollis mollis neque hendrerit.
+<br><br>
+Aliquam lobortis felis porttitor elit interdum, quis ornare quam tempus. Nullam egestas velit justo, et fringilla quam fermentum ultrices. Donec aliquet libero ullamcorper ultricies fermentum. Donec sodales nisi vitae risus laoreet, placerat congue felis vehicula. Aliquam erat volutpat. Donec cursus, felis non ornare viverra, nibh orci ultrices erat, non adipiscing mi tellus eu turpis. Sed mollis massa mi, ut imperdiet lectus pulvinar vel. Nam convallis cursus nunc non rutrum. Morbi eu sapien odio. Donec lacinia in nulla at fermentum. Ut vestibulum vestibulum orci, eu faucibus eros luctus eu. Morbi pharetra tempus commodo. Quisque euismod tincidunt turpis, vel egestas tellus condimentum in. Donec turpis nulla, mollis vel nibh vitae, bibendum molestie turpis. Quisque lobortis, massa in aliquam convallis, nisl justo faucibus mi, vel consequat neque elit ut nulla.
+<br><br>
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur tristique turpis id adipiscing mattis. Sed adipiscing porta nisi a condimentum. Aliquam mattis lectus aliquet metus mollis tristique. Nunc porta lectus ac tempus faucibus. Sed euismod id turpis sit amet gravida. Sed pellentesque vehicula ligula nec rutrum. Sed rutrum vel purus in lobortis. Vivamus ullamcorper sem nibh, ac tempor felis fermentum in. Nulla at nisl eget arcu dictum tempor id quis ligula.
+<br><br>
+Praesent tempor bibendum ultrices. Cras purus elit, sollicitudin vel nibh et, ultrices rutrum magna. Phasellus mollis mi a nibh molestie, id cursus arcu accumsan. Ut vitae ligula dolor. Phasellus non sem non sapien porta elementum. Maecenas id faucibus massa. Nullam in laoreet ante.
+<br><br>
+Praesent nec imperdiet turpis. Aliquam erat volutpat. Vivamus a lacus id ipsum fringilla vehicula porta nec velit. Etiam facilisis ac lacus eget aliquam. Nullam ut urna neque. Etiam pellentesque mi eu neque elementum eleifend. Nunc lacus est, aliquam eu molestie a, posuere rhoncus nisi. Morbi id nisi at lorem interdum tempus a ac magna. Nam vehicula tempor risus ac rutrum. Vivamus placerat adipiscing fermentum. Phasellus facilisis, tellus at convallis dapibus, ante lorem sollicitudin purus, at euismod orci nunc ut metus. Etiam commodo tincidunt magna ac ultrices. In consectetur eros bibendum ante viverra egestas. Curabitur pulvinar luctus diam sit amet tincidunt. Praesent facilisis dui sed scelerisque egestas.
+<br><br>
+Suspendisse quis ante euismod, bibendum tellus sed, feugiat nisi. Suspendisse iaculis posuere lacus, ac laoreet sapien pretium nec. Ut quis porta dolor, at cursus sapien. Curabitur in tristique urna, in tincidunt lacus. Ut dignissim odio tellus, eu ultrices felis convallis vulputate. Donec suscipit vulputate turpis vitae volutpat. Donec sit amet sem vel ante pharetra fringilla eu eu eros. Curabitur nec metus cursus, aliquam lorem a, ullamcorper est. Sed at nulla vel arcu gravida fermentum vel vitae ipsum. Maecenas feugiat tellus ut vestibulum imperdiet.
+<br><br>
+Vestibulum convallis iaculis odio, quis ultrices urna porttitor ut. Mauris luctus cursus pharetra. Fusce sed magna tortor. Donec semper tempus nisi eget placerat. Sed in eros pharetra, rhoncus nisi et, aliquet erat. Ut lacinia justo arcu, a gravida neque condimentum vel. Donec quam nisi, ultricies ac tortor id, pretium luctus ligula.
+<br><br>
+Mauris ut ullamcorper risus. Praesent pharetra orci id risus pretium lobortis eget vel tellus. Morbi velit sem, faucibus in elit non, malesuada suscipit ante. Cras erat sapien, ultricies eu feugiat nec, tincidunt et ante. Sed euismod, erat a luctus mollis, odio neque auctor felis, non pharetra lorem quam et risus. Pellentesque fringilla iaculis nisi id tincidunt. Suspendisse sed sollicitudin augue. Pellentesque suscipit, dui id tempor adipiscing, orci urna porttitor leo, ac laoreet mauris leo dapibus nisi. Pellentesque imperdiet magna ut lorem condimentum feugiat. Nunc varius dui non dolor egestas tempus ac nec lectus. Nunc convallis arcu at turpis interdum fringilla. Etiam et interdum velit.
+<br><br>
+Nullam a lorem quis urna porta sagittis semper sit amet tellus. Morbi sed eros sapien. Nam vel lobortis ipsum. Duis congue, ipsum id tempus pretium, purus purus ullamcorper libero, vitae gravida sapien nisl quis augue. Maecenas consequat augue et turpis placerat consequat. Sed nec pretium enim. Aliquam in leo sed odio facilisis suscipit. Donec at varius mauris. Aliquam a porta velit, nec varius metus. Phasellus turpis turpis, tempus nec eros eu, ultricies iaculis mi. Pellentesque nec rutrum felis, vehicula egestas risus.
+<br><br>
+Cras scelerisque mauris urna, ac tincidunt lectus consectetur a. Duis aliquet fermentum augue, id posuere augue eleifend ut. Fusce consectetur dui felis, nec suscipit neque tempor at. Vestibulum elementum, tortor eu eleifend convallis, leo erat tempus purus, in aliquam ligula tortor sit amet sapien. Nullam convallis porttitor augue. Vestibulum pellentesque nibh eu lobortis tempus. Ut nec accumsan dui. Integer eu bibendum nisi. In id pharetra mauris. Donec in velit nibh. Morbi aliquam magna eu aliquet viverra. Proin placerat, ipsum vel rhoncus condimentum, nisi arcu placerat tortor, ac sagittis purus justo sit amet ante. Nulla nisl massa, interdum id hendrerit ac, tincidunt sed mi. Nam sed malesuada tellus, at molestie est. 
+						</p>
 					</div>
-					<div class="large-4 medium-4 columns">
-						<p><a href="http://github.com/zurb/foundation">Foundation on Github</a><br />Latest code, issue reports, feature requests and more.</p>
-					</div>
-					<div class="large-4 medium-4 columns">
-						<p><a href="http://twitter.com/foundationzurb">@foundationzurb</a><br />Ping us on Twitter if you have questions. If you build something with this we'd love to see it (and send you a totally boss sticker).</p>
-					</div>        
 				</div>
-			</div>
+			</section>
+
+			<a class="exit-off-canvas"></a>
 		</div>
 	</div>
 
 	<script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
 	<script type="text/javascript" src="/public/foundation-5.3.1/js/vendor/fastclick.js"></script>
 	<script type="text/javascript" src="/public/foundation-5.3.1/js/foundation.min.js"></script>
-	<script type="text/javascript">
-		$(document).foundation();
-	</script>
+	<script type="text/javascript" src="/public/js/wsGlobal.js"></script>
 </body>
 </html>

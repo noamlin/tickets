@@ -1,7 +1,7 @@
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
-var logger = require('morgan');
+//var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
@@ -20,7 +20,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
 app.use(cookieParser());
 app.use('/public', express.static(path.join(__dirname, 'public')));
-app.use(favicon(path.join(__dirname + '/public/favicon.ico')));
+app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 
 app.use(fixUrl); // redirect to fixed addresses (e.g. no www and no slashes on the end)
 app.use(dustRenderer); // add our own implementation of using dust
@@ -46,7 +46,7 @@ app.use(function(req, res, next) {
 
 // development error handler
 // will print stacktrace
-if(app.get('env') === 'development') {
+if(process.env.NODE_ENV === 'development') {
 	app.use(function(err, req, res, next) {
 		res.dustRender(
 			"error.dust",

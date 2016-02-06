@@ -3,6 +3,7 @@ tickets
 
 ticketing system
 
-- version 0.x
+- version 3.x
 
+third iteration of the ticketing system. this time with Nodejs and MongoDB.
 project fundamentals 
